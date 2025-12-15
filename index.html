@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QIAQIA Photography | 恰恰摄影</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Added weights 200 (ExtraLight) and 300 (Light) for Noto Serif SC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@200;300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Noto Sans SC"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+              // Comprehensive Serif Stack for maximum compatibility
+              serif: [
+                '"Playfair Display"', 
+                '"Noto Serif SC"', 
+                '"Source Han Serif SC"', 
+                '"Source Han Serif CN"', 
+                '"STSong"',           // Mac Songti
+                '"Songti SC"',        // Mac Songti
+                '"SimSun"',           // Windows SimSun
+                '"Times New Roman"', 
+                'serif'
+              ], 
+            },
+            colors: {
+              brand: {
+                50: '#fff7ed',
+                100: '#ffedd5',
+                200: '#fed7aa',
+                300: '#fdba74',
+                400: '#fb923c',
+                500: '#f97316', // Logo Orange
+                600: '#ea580c',
+                700: '#c2410c',
+                800: '#9a3412',
+                900: '#7c2d12',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+          display: none;
+      }
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      /* Custom utility for design sense */
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      }
+      /* Ensure font smoothing for thin fonts */
+      .font-smooth {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-950 text-slate-200 antialiased selection:bg-brand-500 selection:text-white font-smooth">
+    <div id="root"></div>
+  </body>
+</html>
