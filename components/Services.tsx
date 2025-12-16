@@ -5,6 +5,14 @@ import { Check, Star } from 'lucide-react';
 const Services: React.FC = () => {
   const { services, siteContent, language } = useData();
 
+  const scrollToContact = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="services" className="py-16 md:py-24 bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,8 +79,8 @@ const Services: React.FC = () => {
                     </ul>
                 </div>
 
-                <a
-                    href="#contact"
+                <button
+                    onClick={scrollToContact}
                     className={`block w-full text-center py-3.5 text-xs font-bold tracking-[0.2em] uppercase transition-all mt-auto border ${
                     service.isPopular
                         ? 'bg-brand-600 border-brand-600 text-white hover:bg-brand-500 hover:border-brand-500'
@@ -80,7 +88,7 @@ const Services: React.FC = () => {
                     }`}
                 >
                     {language === 'zh' ? '咨询档期' : 'Inquire Now'}
-                </a>
+                </button>
                 </div>
              );
           })}

@@ -1,10 +1,9 @@
-import React from 'react';
-import { Mail, Phone, MapPin, Instagram, Youtube, Facebook, Twitter, Lock, Aperture } from 'lucide-react';
+import React, { useState } from 'react';
+import { Mail, Phone, MapPin, Instagram, Youtube, Facebook, Twitter, Lock, Aperture, Loader2, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 
 // Custom Xiaohongshu Icon using text
-// The viewBox is wider to accommodate the 3 Chinese characters
 const XiaohongshuIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg 
     viewBox="0 0 340 120" 
@@ -29,16 +28,52 @@ const XiaohongshuIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 const Contact: React.FC = () => {
-  const { siteContent, language } = useData();
+  const { siteContent, language, addMessage } = useData();
+  const [formState, setFormState] = useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
 
   const footerLinks = [
-    { nameZh: '作品展示', nameEn: 'Portfolio', href: '#portfolio' },
-    { nameZh: '服务报价', nameEn: 'Pricing & Packages', href: '#services' },
-    { nameZh: '关于我们', nameEn: 'About Us', href: '#about' },
+    { nameZh: '作品展示', nameEn: 'Portfolio', id: 'portfolio' },
+    { nameZh: '服务报价', nameEn: 'Pricing & Packages', id: 'services' },
+    { nameZh: '关于我们', nameEn: 'About Us', id: 'about' },
   ];
 
-  const preventDefault = (e: React.MouseEvent) => {
+  const handleScroll = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(!formState.name || !formState.email || !formState.message) return;
+
+    setStatus('submitting');
+    
+    // 1. Add to Internal Admin Inbox (Simulation for Demo)
+    addMessage({
+        name: formState.name,
+        email: formState.email,
+        message: formState.message
+    });
+
+    // 2. Fallback: Open Email Client (Real Delivery)
+    // Construct mailto link
+    const subject = `[Website Inquiry] from ${formState.name}`;
+    const body = `Name: ${formState.name}\nEmail: ${formState.email}\n\nMessage:\n${formState.message}`;
+    const mailtoLink = `mailto:${siteContent.contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Simulate API delay for UX
+    setTimeout(() => {
+        setStatus('success');
+        
+        // Open the email client so the user ACTUALLY sends the email
+        // Note: We delay this slightly so the UI updates first
+        window.location.href = mailtoLink;
+
+        setFormState({ name: '', email: '', message: '' });
+        // Reset success message after 5 seconds
+        setTimeout(() => setStatus('idle'), 5000);
+    }, 1000);
   };
 
   return (
@@ -73,7 +108,7 @@ const Contact: React.FC = () => {
                 </a>
               )}
               
-               {/* Facebook (Restored) */}
+               {/* Facebook */}
               {siteContent.socialFacebook && (
                 <a 
                   href={siteContent.socialFacebook} 
@@ -86,7 +121,7 @@ const Contact: React.FC = () => {
                 </a>
               )}
 
-               {/* Twitter/X (Restored) */}
+               {/* Twitter/X */}
               {siteContent.socialTwitter && (
                 <a 
                   href={siteContent.socialTwitter} 
@@ -99,7 +134,7 @@ const Contact: React.FC = () => {
                 </a>
               )}
 
-              {/* YouTube (Added) */}
+              {/* YouTube */}
               {siteContent.socialYoutube && (
                  <a 
                   href={siteContent.socialYoutube} 
@@ -112,7 +147,7 @@ const Contact: React.FC = () => {
                 </a>
               )}
 
-               {/* Xiaohongshu (Added with Custom Text Icon) */}
+               {/* Xiaohongshu */}
               {siteContent.socialXiaohongshu && (
                 <a 
                   href={siteContent.socialXiaohongshu} 
@@ -121,7 +156,6 @@ const Contact: React.FC = () => {
                   className="text-slate-500 hover:text-brand-500 transition-colors"
                   aria-label="Little Red Book"
                 >
-                  {/* Aspect ratio approx 3:1 for text */}
                   <XiaohongshuIcon className="h-5 w-14" />
                 </a>
               )}
@@ -153,12 +187,12 @@ const Contact: React.FC = () => {
             <ul className="space-y-4">
               {footerLinks.map((link, index) => (
                 <li key={index}>
-                  <a 
-                    href={link.href} 
-                    className="text-slate-400 hover:text-brand-500 text-sm transition-colors font-light block py-1"
+                  <button 
+                    onClick={(e) => handleScroll(e, link.id)}
+                    className="text-slate-400 hover:text-brand-500 text-sm transition-colors font-light block py-1 text-left"
                   >
                     {language === 'zh' ? link.nameZh : link.nameEn}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -167,29 +201,54 @@ const Contact: React.FC = () => {
           {/* Simple Form */}
           <div>
              <h4 className="text-white font-bold mb-6 md:mb-8 font-serif tracking-widest text-sm uppercase">{language === 'zh' ? '留言预约' : 'Inquiries'}</h4>
-             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-               <div className="grid grid-cols-2 gap-4">
-                 <input
-                   type="text"
-                   placeholder={language === 'zh' ? "姓名" : "Name"}
-                   className="w-full bg-slate-900 border border-slate-800 focus:border-brand-500 rounded-sm px-4 py-3 text-base md:text-xs text-white focus:outline-none transition-colors"
-                 />
-                  <input
-                   type="email"
-                   placeholder={language === 'zh' ? "邮箱" : "Email"}
-                   className="w-full bg-slate-900 border border-slate-800 focus:border-brand-500 rounded-sm px-4 py-3 text-base md:text-xs text-white focus:outline-none transition-colors"
-                 />
-               </div>
-               
-               <textarea
-                 rows={3}
-                 placeholder={language === 'zh' ? "请简述您的拍摄需求..." : "Tell us about your shoot..."}
-                 className="w-full bg-slate-900 border border-slate-800 focus:border-brand-500 rounded-sm px-4 py-3 text-base md:text-xs text-white focus:outline-none resize-none transition-colors"
-               ></textarea>
-               <button className="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-sm text-xs tracking-widest uppercase transition-colors">
-                 {language === 'zh' ? '发送信息' : 'Send Message'}
-               </button>
-             </form>
+             {status === 'success' ? (
+                 <div className="bg-green-900/20 border border-green-800 rounded-lg p-6 text-center animate-fade-in">
+                     <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
+                     <p className="text-white font-medium mb-1">{language === 'zh' ? '已准备发送' : 'Ready to Send'}</p>
+                     <p className="text-slate-400 text-xs">{language === 'zh' ? '正在为您打开邮件客户端...' : 'Opening your email client...'}</p>
+                 </div>
+             ) : (
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-2 gap-4">
+                    <input
+                    type="text"
+                    required
+                    value={formState.name}
+                    onChange={(e) => setFormState({...formState, name: e.target.value})}
+                    placeholder={language === 'zh' ? "姓名" : "Name"}
+                    disabled={status === 'submitting'}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-brand-500 rounded-sm px-4 py-3 text-base md:text-xs text-white focus:outline-none transition-colors disabled:opacity-50"
+                    />
+                    <input
+                    type="email"
+                    required
+                    value={formState.email}
+                    onChange={(e) => setFormState({...formState, email: e.target.value})}
+                    placeholder={language === 'zh' ? "邮箱" : "Email"}
+                    disabled={status === 'submitting'}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-brand-500 rounded-sm px-4 py-3 text-base md:text-xs text-white focus:outline-none transition-colors disabled:opacity-50"
+                    />
+                </div>
+                
+                <textarea
+                    rows={3}
+                    required
+                    value={formState.message}
+                    onChange={(e) => setFormState({...formState, message: e.target.value})}
+                    placeholder={language === 'zh' ? "请简述您的拍摄需求..." : "Tell us about your shoot..."}
+                    disabled={status === 'submitting'}
+                    className="w-full bg-slate-900 border border-slate-800 focus:border-brand-500 rounded-sm px-4 py-3 text-base md:text-xs text-white focus:outline-none resize-none transition-colors disabled:opacity-50"
+                ></textarea>
+                <button 
+                    type="submit"
+                    disabled={status === 'submitting'}
+                    className="w-full bg-brand-600 hover:bg-brand-500 disabled:bg-slate-700 text-white font-bold py-3 rounded-sm text-xs tracking-widest uppercase transition-colors flex items-center justify-center gap-2"
+                >
+                    {status === 'submitting' && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {language === 'zh' ? '发送信息' : 'Send Message'}
+                </button>
+                </form>
+             )}
           </div>
         </div>
 

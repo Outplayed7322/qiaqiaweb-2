@@ -5,6 +5,13 @@ import { useData } from '../context/DataContext';
 const Hero: React.FC = () => {
   const { siteContent, language } = useData();
 
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     // Changed h-screen to min-h-[100dvh] for better mobile browser support (address bar handling)
     <section id="home" className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
@@ -47,18 +54,18 @@ const Hero: React.FC = () => {
         </h1>
         
         <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center px-6 sm:px-0">
-          <a
-            href="#portfolio"
+          <button
+            onClick={() => scrollToSection('portfolio')}
             className="w-full sm:w-auto px-10 py-3 bg-white text-slate-950 font-serif font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-brand-50 transition-colors duration-300 rounded-sm text-center"
           >
             {language === 'zh' ? '浏览作品' : 'View Portfolio'}
-          </a>
-          <a
-            href="#contact"
+          </button>
+          <button
+            onClick={() => scrollToSection('contact')}
             className="w-full sm:w-auto px-10 py-3 border border-brand-500 text-brand-500 font-serif font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-brand-500 hover:text-white transition-all duration-300 rounded-sm text-center"
           >
             {language === 'zh' ? '预约拍摄' : 'Book Session'}
-          </a>
+          </button>
         </div>
       </div>
 

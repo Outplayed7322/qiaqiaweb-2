@@ -65,3 +65,12 @@ export interface ChatMessage {
   text: string;
   timestamp: number;
 }
+
+export interface ContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  date: string;
+  read: boolean;
+}

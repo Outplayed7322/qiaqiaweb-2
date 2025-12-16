@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { PortfolioItem, ServicePackage, SiteContent, Language, Testimonial } from '../types';
+import { PortfolioItem, ServicePackage, SiteContent, Language, Testimonial, ContactMessage } from '../types';
 
 // Default Data with Bilingual Content
 const defaultServices: ServicePackage[] = [
@@ -117,13 +117,17 @@ interface DataContextType {
   toggleLanguage: () => void;
   portfolio: PortfolioItem[];
   services: ServicePackage[];
-  testimonials: Testimonial[]; // Added
+  testimonials: Testimonial[];
   siteContent: SiteContent;
+  messages: ContactMessage[]; // Added
   addPortfolioItem: (item: Omit<PortfolioItem, 'id'>) => void;
   updatePortfolioItem: (item: PortfolioItem) => void;
   deletePortfolioItem: (id: number) => void;
   updateServicePackage: (item: ServicePackage) => void;
   updateSiteContent: (content: SiteContent) => void;
+  addMessage: (msg: Omit<ContactMessage, 'id' | 'date' | 'read'>) => void; // Added
+  deleteMessage: (id: number) => void; // Added
+  markMessageRead: (id: number) => void; // Added
   resetData: () => void;
 }
 
@@ -133,8 +137,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [language, setLanguage] = useState<Language>('zh');
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [services, setServices] = useState<ServicePackage[]>([]);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]); // Added
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]); 
   const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
+  const [messages, setMessages] = useState<ContactMessage[]>([]); // Added
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
@@ -142,15 +147,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedPortfolio = localStorage.getItem('qiaqia_portfolio_v3'); 
     const storedServices = localStorage.getItem('qiaqia_services_v3');
     const storedContent = localStorage.getItem('qiaqia_content_v3'); 
-    
+    const storedMessages = localStorage.getItem('qiaqia_messages_v1'); // Load messages
+
     setPortfolio(storedPortfolio ? JSON.parse(storedPortfolio) : defaultPortfolio);
     setServices(storedServices ? JSON.parse(storedServices) : defaultServices);
-    setTestimonials(defaultTestimonials); // Initialize static testimonials
+    setTestimonials(defaultTestimonials); 
+    setMessages(storedMessages ? JSON.parse(storedMessages) : []); // Set messages
     
-    // Merge stored content with default to ensure new fields (heroImage, serviceNotes) exist if old data is present
+    // Merge stored content with default to ensure new fields exist if old data is present
     if (storedContent) {
         const parsedContent = JSON.parse(storedContent);
-        // Ensure social fields exist if loading from older version
         setSiteContent({ 
             ...defaultSiteContent, 
             ...parsedContent,
@@ -173,8 +179,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('qiaqia_portfolio_v3', JSON.stringify(portfolio));
       localStorage.setItem('qiaqia_services_v3', JSON.stringify(services));
       localStorage.setItem('qiaqia_content_v3', JSON.stringify(siteContent));
+      localStorage.setItem('qiaqia_messages_v1', JSON.stringify(messages)); // Save messages
     }
-  }, [portfolio, services, siteContent, isLoaded]);
+  }, [portfolio, services, siteContent, messages, isLoaded]);
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'zh' ? 'en' : 'zh');
@@ -201,11 +208,31 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSiteContent(content);
   };
 
+  // Message Handlers
+  const addMessage = (msg: Omit<ContactMessage, 'id' | 'date' | 'read'>) => {
+      const newMessage: ContactMessage = {
+          ...msg,
+          id: Date.now(),
+          date: new Date().toISOString(),
+          read: false
+      };
+      setMessages(prev => [newMessage, ...prev]);
+  };
+
+  const deleteMessage = (id: number) => {
+      setMessages(prev => prev.filter(m => m.id !== id));
+  };
+
+  const markMessageRead = (id: number) => {
+      setMessages(prev => prev.map(m => m.id === id ? { ...m, read: true } : m));
+  };
+
   const resetData = () => {
     setPortfolio(defaultPortfolio);
     setServices(defaultServices);
     setSiteContent(defaultSiteContent);
     setTestimonials(defaultTestimonials);
+    setMessages([]);
   };
 
   if (!isLoaded) return null;
@@ -218,11 +245,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       services,
       testimonials,
       siteContent,
+      messages,
       addPortfolioItem,
       updatePortfolioItem,
       deletePortfolioItem,
       updateServicePackage,
       updateSiteContent,
+      addMessage,
+      deleteMessage,
+      markMessageRead,
       resetData
     }}>
       {children}

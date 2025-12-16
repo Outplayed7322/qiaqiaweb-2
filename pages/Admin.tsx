@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Link } from 'react-router-dom';
-import { Camera, LogOut, Plus, Trash2, Edit2, Check, X, RotateCcw, Save, LayoutTemplate, Image as ImageIcon, Instagram, Youtube, Hash, Facebook, Twitter } from 'lucide-react';
+import { Camera, LogOut, Plus, Trash2, Edit2, Check, X, RotateCcw, Save, LayoutTemplate, Image as ImageIcon, Instagram, Youtube, Hash, Facebook, Twitter, Mail } from 'lucide-react';
 import { PortfolioItem, ServicePackage, SiteContent } from '../types';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'content' | 'portfolio' | 'services'>('content');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'content' | 'portfolio' | 'services'>('inbox');
+  const { messages } = useData();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +53,8 @@ const Admin: React.FC = () => {
     );
   }
 
+  const unreadCount = messages.filter(m => !m.read).length;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
       <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
@@ -73,7 +76,19 @@ const Admin: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="flex space-x-1 bg-slate-900 p-1 rounded-xl mb-8 w-fit">
+        <div className="flex space-x-1 bg-slate-900 p-1 rounded-xl mb-8 w-fit overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('inbox')}
+            className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+              activeTab === 'inbox' ? 'bg-brand-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <div className="relative">
+                <Mail className="h-4 w-4" />
+                {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}
+            </div>
+             收件箱 (Inbox)
+          </button>
           <button
             onClick={() => setActiveTab('content')}
             className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
@@ -100,6 +115,7 @@ const Admin: React.FC = () => {
           </button>
         </div>
 
+        {activeTab === 'inbox' && <InboxManager />}
         {activeTab === 'content' && <SiteContentManager />}
         {activeTab === 'portfolio' && <PortfolioManager />}
         {activeTab === 'services' && <ServicesManager />}
@@ -109,6 +125,74 @@ const Admin: React.FC = () => {
 };
 
 // --- Sub Components ---
+
+const InboxManager: React.FC = () => {
+    const { messages, deleteMessage, markMessageRead } = useData();
+
+    if (messages.length === 0) {
+        return (
+            <div className="text-center py-20 bg-slate-900 rounded-xl border border-slate-800">
+                <Mail className="h-12 w-12 text-slate-700 mx-auto mb-4" />
+                <h3 className="text-white font-bold">暂时没有留言</h3>
+                <p className="text-slate-500 text-sm mt-2">当有客户通过网站提交表单时，消息会显示在这里。</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4 animate-fade-in-up">
+             <div className="bg-blue-900/20 border border-blue-800 p-4 rounded-lg flex gap-3 items-start">
+                <div className="mt-1"><Mail className="h-5 w-5 text-blue-400" /></div>
+                <div>
+                    <h4 className="text-blue-100 font-bold text-sm">注意事项</h4>
+                    <p className="text-blue-200/70 text-xs mt-1">
+                        这些消息保存在您的浏览器本地缓存中。如果客户在另一台电脑访问，您可能无法在此看到。
+                        <br/>为了确保不漏掉任何信息，我们已在前端设置了“邮件直达”功能：客户提交时会自动唤起邮件客户端给您发邮件。
+                    </p>
+                </div>
+            </div>
+
+            <h2 className="text-xl font-bold text-white mb-4">收件箱 ({messages.length})</h2>
+            <div className="grid gap-4">
+                {messages.map(msg => (
+                    <div 
+                        key={msg.id} 
+                        className={`p-6 rounded-xl border transition-all ${
+                            msg.read ? 'bg-slate-900 border-slate-800 opacity-80' : 'bg-slate-800 border-brand-500/30 shadow-lg'
+                        }`}
+                        onClick={() => markMessageRead(msg.id)}
+                    >
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                                    {msg.name}
+                                    {!msg.read && <span className="bg-brand-500 text-white text-[10px] px-2 py-0.5 rounded-full">NEW</span>}
+                                </h3>
+                                <a href={`mailto:${msg.email}`} className="text-brand-400 hover:text-brand-300 text-sm flex items-center gap-1 mt-1">
+                                    <Mail className="h-3 w-3" /> {msg.email}
+                                </a>
+                            </div>
+                            <span className="text-slate-500 text-xs">
+                                {new Date(msg.date).toLocaleString()}
+                            </span>
+                        </div>
+                        <div className="bg-slate-950 p-4 rounded border border-slate-800 text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">
+                            {msg.message}
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); if(confirm('确定删除此留言?')) deleteMessage(msg.id); }}
+                                className="text-slate-500 hover:text-red-500 text-xs flex items-center gap-1 transition-colors px-3 py-1 rounded hover:bg-slate-900"
+                            >
+                                <Trash2 className="h-3 w-3" /> 删除
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const SiteContentManager: React.FC = () => {
     const { siteContent, updateSiteContent } = useData();
