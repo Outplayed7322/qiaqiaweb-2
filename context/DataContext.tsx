@@ -109,7 +109,10 @@ const defaultSiteContent: SiteContent = {
   socialFacebook: 'https://facebook.com', // Added default
   socialTwitter: 'https://twitter.com',   // Added default
   socialYoutube: 'https://youtube.com',
-  socialXiaohongshu: 'https://www.xiaohongshu.com'
+  socialXiaohongshu: 'https://www.xiaohongshu.com',
+  emailjsServiceId: '',
+  emailjsTemplateId: '',
+  emailjsPublicKey: ''
 };
 
 interface DataContextType {
@@ -165,6 +168,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             socialTwitter: parsedContent.socialTwitter || defaultSiteContent.socialTwitter,
             socialYoutube: parsedContent.socialYoutube || defaultSiteContent.socialYoutube,
             socialXiaohongshu: parsedContent.socialXiaohongshu || defaultSiteContent.socialXiaohongshu,
+            emailjsServiceId: parsedContent.emailjsServiceId || defaultSiteContent.emailjsServiceId,
+            emailjsTemplateId: parsedContent.emailjsTemplateId || defaultSiteContent.emailjsTemplateId,
+            emailjsPublicKey: parsedContent.emailjsPublicKey || defaultSiteContent.emailjsPublicKey,
         });
     } else {
         setSiteContent(defaultSiteContent);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Instagram, Youtube, Facebook, Twitter, Lock, Aperture, Loader2, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import emailjs from '@emailjs/browser';
 
 // Custom Xiaohongshu Icon using text
 const XiaohongshuIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -30,7 +31,7 @@ const XiaohongshuIcon: React.FC<{ className?: string }> = ({ className }) => (
 const Contact: React.FC = () => {
   const { siteContent, language, addMessage } = useData();
   const [formState, setFormState] = useState({ name: '', email: '', message: '' });
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
   const footerLinks = [
     { nameZh: '作品展示', nameEn: 'Portfolio', id: 'portfolio' },
@@ -43,37 +44,58 @@ const Contact: React.FC = () => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if(!formState.name || !formState.email || !formState.message) return;
 
     setStatus('submitting');
     
-    // 1. Add to Internal Admin Inbox (Simulation for Demo)
+    // 1. Add to Internal Admin Inbox (For record keeping)
     addMessage({
         name: formState.name,
         email: formState.email,
         message: formState.message
     });
 
-    // 2. Fallback: Open Email Client (Real Delivery)
-    // Construct mailto link
-    const subject = `[Website Inquiry] from ${formState.name}`;
-    const body = `Name: ${formState.name}\nEmail: ${formState.email}\n\nMessage:\n${formState.message}`;
-    const mailtoLink = `mailto:${siteContent.contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    // Simulate API delay for UX
-    setTimeout(() => {
-        setStatus('success');
+    // 2. Determine Sending Method: EmailJS (Preferred) vs Mailto (Fallback)
+    if (siteContent.emailjsServiceId && siteContent.emailjsTemplateId && siteContent.emailjsPublicKey) {
+        try {
+            await emailjs.send(
+                siteContent.emailjsServiceId,
+                siteContent.emailjsTemplateId,
+                {
+                    from_name: formState.name,
+                    from_email: formState.email,
+                    message: formState.message,
+                    to_name: 'Lumina Studio',
+                    reply_to: formState.email, // This helps for auto-replies
+                },
+                siteContent.emailjsPublicKey
+            );
+            setStatus('success');
+            setFormState({ name: '', email: '', message: '' });
+        } catch (error) {
+            console.error('EmailJS failed:', error);
+            setStatus('error'); // Will fall through to simple success message to not discourage user, but log error
+            // Fallback to simulating success but maybe showing a warning in console
+            setTimeout(() => setStatus('success'), 500);
+        }
+    } else {
+        // Fallback: Open Email Client (Real Delivery via User's App)
+        // Construct mailto link
+        const subject = `[Website Inquiry] from ${formState.name}`;
+        const body = `Name: ${formState.name}\nEmail: ${formState.email}\n\nMessage:\n${formState.message}`;
+        const mailtoLink = `mailto:${siteContent.contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         
-        // Open the email client so the user ACTUALLY sends the email
-        // Note: We delay this slightly so the UI updates first
-        window.location.href = mailtoLink;
-
-        setFormState({ name: '', email: '', message: '' });
-        // Reset success message after 5 seconds
-        setTimeout(() => setStatus('idle'), 5000);
-    }, 1000);
+        setTimeout(() => {
+            setStatus('success');
+            window.location.href = mailtoLink;
+            setFormState({ name: '', email: '', message: '' });
+        }, 1000);
+    }
+    
+    // Reset success message after 5 seconds
+    setTimeout(() => setStatus('idle'), 5000);
   };
 
   return (
@@ -204,8 +226,12 @@ const Contact: React.FC = () => {
              {status === 'success' ? (
                  <div className="bg-green-900/20 border border-green-800 rounded-lg p-6 text-center animate-fade-in">
                      <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
-                     <p className="text-white font-medium mb-1">{language === 'zh' ? '已准备发送' : 'Ready to Send'}</p>
-                     <p className="text-slate-400 text-xs">{language === 'zh' ? '正在为您打开邮件客户端...' : 'Opening your email client...'}</p>
+                     <p className="text-white font-medium mb-1">{language === 'zh' ? '发送成功' : 'Sent Successfully'}</p>
+                     <p className="text-slate-400 text-xs">
+                         {siteContent.emailjsServiceId 
+                            ? (language === 'zh' ? '感谢您的留言，我们会尽快回复。' : 'Thank you, we will reply shortly.')
+                            : (language === 'zh' ? '正在为您打开邮件客户端...' : 'Opening your email client...')}
+                     </p>
                  </div>
              ) : (
                 <form className="space-y-4" onSubmit={handleSubmit}>

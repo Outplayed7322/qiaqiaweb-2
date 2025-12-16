@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Link } from 'react-router-dom';
-import { Camera, LogOut, Plus, Trash2, Edit2, Check, X, RotateCcw, Save, LayoutTemplate, Image as ImageIcon, Instagram, Youtube, Hash, Facebook, Twitter, Mail } from 'lucide-react';
+import { Camera, LogOut, Plus, Trash2, Edit2, Check, X, RotateCcw, Save, LayoutTemplate, Image as ImageIcon, Instagram, Youtube, Hash, Facebook, Twitter, Mail, Settings } from 'lucide-react';
 import { PortfolioItem, ServicePackage, SiteContent } from '../types';
 
 const Admin: React.FC = () => {
@@ -217,6 +217,32 @@ const SiteContentManager: React.FC = () => {
                 <button onClick={handleSave} className={`px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2 ${isSaved ? 'bg-green-600 text-white' : 'bg-brand-600 hover:bg-brand-500 text-white'}`}>
                     {isSaved ? <><Check className="h-4 w-4" /> 已保存</> : <><Save className="h-4 w-4" /> 保存修改</>}
                 </button>
+            </div>
+
+             {/* EmailJS Configuration Section */}
+             <div className="space-y-4 pt-4 border-t border-slate-800/50 bg-slate-800/20 p-4 rounded-lg">
+                 <div className="flex items-center gap-2 mb-2">
+                     <Settings className="h-4 w-4 text-brand-500" />
+                     <h3 className="text-brand-500 font-bold uppercase tracking-wider text-sm">邮件发送配置 (EmailJS)</h3>
+                 </div>
+                 <p className="text-xs text-slate-400 mb-4">
+                    配置此项后，客户提交表单将直接发送邮件到您的邮箱，并可自动回复客户。
+                    请前往 <a href="https://www.emailjs.com" target="_blank" className="text-blue-400 underline">EmailJS.com</a> 注册免费账号获取以下信息。
+                 </p>
+                 <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-slate-400 text-xs mb-1">Service ID</label>
+                        <input name="emailjsServiceId" value={formData.emailjsServiceId} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-white text-sm font-mono" placeholder="service_xxxx" />
+                    </div>
+                    <div>
+                        <label className="block text-slate-400 text-xs mb-1">Template ID</label>
+                        <input name="emailjsTemplateId" value={formData.emailjsTemplateId} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-white text-sm font-mono" placeholder="template_xxxx" />
+                    </div>
+                    <div>
+                        <label className="block text-slate-400 text-xs mb-1">Public Key</label>
+                        <input name="emailjsPublicKey" value={formData.emailjsPublicKey} onChange={handleChange} className="w-full bg-slate-950 border border-slate-700 rounded p-3 text-white text-sm font-mono" placeholder="xxxx-xxxx-xxxx" />
+                    </div>
+                </div>
             </div>
 
             {/* Hero Section */}

@@ -58,6 +58,10 @@ export interface SiteContent {
   socialTwitter: string;  // Added
   socialYoutube: string;
   socialXiaohongshu: string;
+  // EmailJS Configuration
+  emailjsServiceId: string;
+  emailjsTemplateId: string;
+  emailjsPublicKey: string;
 }
 
 export interface ChatMessage {
